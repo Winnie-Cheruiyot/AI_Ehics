@@ -1,0 +1,42 @@
+COMPAS Recidivism Dataset Bias Audit Report
+Introduction
+This report details an audit of the COMPAS (Correctional Offender Management Profiling for Alternative Sanctions) recidivism dataset, focusing on potential racial bias in its risk scores. The audit utilizes Python and the IBM AI Fairness 360 (AIF360) toolkit to analyze disparities, particularly between Caucasian and African-American individuals, in the context of predicting two-year recidivism.
+
+Methodology
+A synthetic dataset mimicking the known characteristics and biases of the COMPAS data was generated for this audit. The 'race' attribute was designated as the sensitive feature, with 'African-American' identified as the unprivileged group and 'Caucasian' as the privileged group. The target variable was 'two_year_recid' (0 for no recidivism, 1 for recidivism), with 'no recidivism' (0) being the favorable outcome.
+
+The data was split into training and testing sets. Initial bias was analyzed using AIF360's BinaryLabelDatasetMetric to calculate Disparate Impact and Mean Difference of Favorable Outcome on the raw data. Subsequently, a Logistic Regression model was trained on the preprocessed data, and its fairness metrics (Statistical Parity Difference, Equal Opportunity Difference, Average Odds Difference, False Positive Rate Difference) were evaluated using ClassificationMetric. Visualizations were generated to illustrate actual recidivism distribution and False Positive Rate (FPR) disparity by race.
+
+Key Findings
+The audit confirmed significant racial disparities, consistent with known issues in the COMPAS system:
+
+Disparate Impact: The Disparate Impact for the original dataset was 0.6875, which is below the common threshold of 0.8. This indicates that the unprivileged group (African-American) has a significantly lower rate of favorable outcomes (no recidivism) compared to the privileged group (Caucasian).
+
+Mean Difference of Favorable Outcome: The Mean Difference was -0.1500, falling outside the acceptable range of +/- 0.1. This further confirms that the unprivileged group experiences a notably lower favorable outcome rate.
+
+Classifier Fairness Metrics: The Logistic Regression model, trained on this data, also exhibited bias:
+
+Statistical Parity Difference (SPD): -0.1000
+
+Equal Opportunity Difference (EOD): -0.0500
+
+False Positive Rate Difference (FPRD): 0.0833
+
+The negative SPD indicates that African-American individuals are less likely to receive a favorable prediction (e.g., predicted low risk) than Caucasian individuals. The positive FPRD indicates that African-American individuals are more likely to be incorrectly classified as high-risk (false positive) compared to Caucasian individuals.
+
+False Positive Rate Disparity (Visualization): The generated bar plot clearly showed a higher False Positive Rate for African-American individuals in the COMPAS scores compared to Caucasian individuals. This means African-Americans who would not recidivate are disproportionately assigned high-risk scores. For instance, in the synthetic data, African-Americans had an FPR of approximately 0.14, while Caucasians had an FPR of approximately 0.06.
+
+Remediation Steps
+Addressing these biases requires a multi-pronged approach:
+
+Data Re-balancing and Augmentation: Actively collect more representative data from underrepresented groups. Employ re-sampling techniques (e.g., oversampling the unprivileged group or undersampling the privileged group) during training to mitigate statistical imbalances.
+
+Pre-processing Debiasing Algorithms: Utilize AIF360's pre-processing algorithms like Reweighing to adjust the weights of individual data points in the training set, ensuring fairness metrics are improved before model training.
+
+In-processing Debiasing Algorithms: Employ algorithms that integrate fairness constraints directly into the model training process, such as AIF360's AdversarialDebiasing. This method trains a classifier while simultaneously training an "adversary" that tries to predict the sensitive attribute from the classifier's internal representations, forcing the classifier to become more fair.
+
+Post-processing Debiasing Algorithms: Apply techniques after model training to adjust predictions to achieve fairness. CalibratedEqOddsPostprocessing from AIF360 can be used to equalize true positive rates and false positive rates across groups, balancing the trade-off between different fairness metrics.
+
+Human Oversight and Transparency: Implement a human-in-the-loop system where AI recommendations are reviewed by trained human experts. Provide clear explanations for risk scores to ensure transparency and accountability.
+
+By combining these strategies, the goal is to develop a more equitable system that provides fair risk assessments across all demographic groups, reducing the potential for discriminatory outcomes in the justice system.
