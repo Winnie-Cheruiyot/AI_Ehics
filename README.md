@@ -1,4 +1,4 @@
-# AI_Ehics
+# AI_Ethics
 
 A research and implementation project exploring ethical concerns in the design, deployment, and governance of Artificial Intelligence (AI) systems. This project is part of an academic or professional contribution focused on responsible and sustainable AI for real-world applications.
 
